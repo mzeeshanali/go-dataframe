@@ -9,7 +9,7 @@ Utilize the CreateDataFrame function to create a DataFrame from an existing CSV 
 import (
     "fmt"
 
-    dataframe "github.com/kfultz07/go-dataframe"
+    dataframe "github.com/datumbrain/go-dataframe"
 )
 ```
 
