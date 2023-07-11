@@ -268,6 +268,22 @@ func SortDataframe(columnName string, df *DataFrame) {
 		return df.FrameRecords[i].Val(columnName, df.Headers) <
 			df.FrameRecords[j].Val(columnName, df.Headers)
 	})
+  
+// Stack multiple DataFrames with matching headers
+func Merge(dfs ...DataFrame) (DataFrame, error) {
+	if len(dfs) == 0 {
+		return DataFrame{}, nil
+	}
+
+	var err error
+	mdf := CreateNewDataFrame(dfs[0].Columns())
+	for _, df := range dfs {
+		mdf, err = mdf.ConcatFrames(&df)
+		if err != nil {
+			return DataFrame{}, err
+		}
+	}
+	return mdf, nil
 }
 
 // User specifies columns they want to keep from a preexisting DataFrame
