@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -257,7 +258,18 @@ func LoadFrames(filePath string, files []string) ([]DataFrame, error) {
 	return orderedResults, nil
 }
 
-// Stack multiple DataFrames with matching headers.
+// Sort the dataframe by column name
+func SortDataframe(columnName string, df *DataFrame) {
+	if df == nil {
+		return
+	}
+
+	sort.Slice(df.FrameRecords, func(i, j int) bool {
+		return df.FrameRecords[i].Val(columnName, df.Headers) <
+			df.FrameRecords[j].Val(columnName, df.Headers)
+	})
+  
+// Stack multiple DataFrames with matching headers
 func Merge(dfs ...DataFrame) (DataFrame, error) {
 	if len(dfs) == 0 {
 		return DataFrame{}, nil
