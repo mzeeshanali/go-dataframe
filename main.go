@@ -257,6 +257,23 @@ func LoadFrames(filePath string, files []string) ([]DataFrame, error) {
 	return orderedResults, nil
 }
 
+// Stack multiple DataFrames with matching headers.
+func Merge(dfs ...DataFrame) (DataFrame, error) {
+	if len(dfs) == 0 {
+		return DataFrame{}, nil
+	}
+
+	var err error
+	mdf := CreateNewDataFrame(dfs[0].Columns())
+	for _, df := range dfs {
+		mdf, err = mdf.ConcatFrames(&df)
+		if err != nil {
+			return DataFrame{}, err
+		}
+	}
+	return mdf, nil
+}
+
 // User specifies columns they want to keep from a preexisting DataFrame
 func (frame DataFrame) KeepColumns(columns []string) DataFrame {
 	df := CreateNewDataFrame(columns)
