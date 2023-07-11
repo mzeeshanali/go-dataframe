@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -255,6 +256,18 @@ func LoadFrames(filePath string, files []string) ([]DataFrame, error) {
 		orderedResults = append(orderedResults, val)
 	}
 	return orderedResults, nil
+}
+
+// Sort the dataframe by column name
+func SortDataframe(columnName string, df *DataFrame) {
+	if df == nil {
+		return
+	}
+
+	sort.Slice(df.FrameRecords, func(i, j int) bool {
+		return df.FrameRecords[i].Val(columnName, df.Headers) <
+			df.FrameRecords[j].Val(columnName, df.Headers)
+	})
 }
 
 // User specifies columns they want to keep from a preexisting DataFrame
