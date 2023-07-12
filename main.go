@@ -258,17 +258,6 @@ func LoadFrames(filePath string, files []string) ([]DataFrame, error) {
 	return orderedResults, nil
 }
 
-// Sort the dataframe by column name
-func SortDataframe(columnName string, df *DataFrame) {
-	if df == nil {
-		return
-	}
-
-	sort.Slice(df.FrameRecords, func(i, j int) bool {
-		return df.FrameRecords[i].Val(columnName, df.Headers) <
-			df.FrameRecords[j].Val(columnName, df.Headers)
-	})
-  
 // Stack multiple DataFrames with matching headers
 func Merge(dfs ...DataFrame) (DataFrame, error) {
 	if len(dfs) == 0 {
@@ -284,6 +273,18 @@ func Merge(dfs ...DataFrame) (DataFrame, error) {
 		}
 	}
 	return mdf, nil
+}
+
+// Sort the dataframe by column name
+func (frame *DataFrame) Sort(columnName string) {
+	if frame == nil {
+		return
+	}
+
+	sort.Slice(frame.FrameRecords, func(i, j int) bool {
+		return frame.FrameRecords[i].Val(columnName, frame.Headers) <
+			frame.FrameRecords[j].Val(columnName, frame.Headers)
+	})
 }
 
 // User specifies columns they want to keep from a preexisting DataFrame
