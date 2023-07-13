@@ -275,6 +275,20 @@ func Merge(dfs ...DataFrame) (DataFrame, error) {
 	return mdf, nil
 }
 
+// Return the values of the specified field
+func (frame *DataFrame) ColumnVal(fieldName string, headers map[string]int) []string {
+	if _, ok := headers[fieldName]; !ok {
+		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
+	}
+
+	var fieldVals []string
+	records := len(frame.FrameRecords)
+	for i := 0; i < records; i++ {
+		fieldVals = append(fieldVals, frame.FrameRecords[i].Data[headers[fieldName]])
+	}
+	return fieldVals
+}
+
 // Sort the dataframe by column name
 func (frame *DataFrame) Sort(columnName string) {
 	if frame == nil {
