@@ -1058,3 +1058,26 @@ func (x Record) ConvertToDate(fieldName string, headers map[string]int) time.Tim
 	result := dateConverter(x.Val(fieldName, headers))
 	return result
 }
+
+// Validating .parquet file extension
+func isParquetFile(filepath string) bool {
+	file, err := os.Open(filepath)
+	if err != nil {
+		log.Fatal("File couldn't open:", err)
+	}
+	defer file.Close()
+
+	signature := make([]byte, 4) // enough to read the file's signature
+	_, err = file.Read(signature)
+	if err != nil {
+		log.Fatal("Unable to read:", err)
+	}
+
+	expectedSignature := []byte("PAR1") // Parquet file signature
+
+	if !bytes.Equal(signature, expectedSignature) {
+		log.Panic("File format not supported")
+		return false
+	}
+	return true
+}
