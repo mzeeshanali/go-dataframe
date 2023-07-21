@@ -13,6 +13,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/xitongsys/parquet-go-source/local"
+	"github.com/xitongsys/parquet-go/reader"
 )
 
 type Record struct {
@@ -1074,10 +1077,58 @@ func isParquetFile(filepath string) bool {
 	}
 
 	expectedSignature := []byte("PAR1") // Parquet file signature
+	expectedSignature2 := []byte("PAR2")
 
-	if !bytes.Equal(signature, expectedSignature) {
+	if !bytes.Equal(signature, expectedSignature) && !bytes.Equal(signature, expectedSignature2) {
 		log.Panic("File format not supported")
 		return false
 	}
 	return true
+}
+
+// Method to make New DataFrames out of Parquet Files
+func CreateDataFrameFromParquetFile(filePath string) (DataFrame, error) {
+	// Open the Parquet file
+	if !isParquetFile(filePath) {
+		panic("File format should be parquet")
+	}
+
+	f, err := local.NewLocalFileReader(filePath)
+	if err != nil {
+		return DataFrame{}, err
+	}
+	defer f.Close()
+
+	// Create a Parquet reader
+	pFile, err := reader.NewParquetReader(f, nil, 4)
+	if err != nil {
+		return DataFrame{}, err
+	}
+	defer pFile.ReadStop()
+
+	// Get the column names from the schema
+	columns := make([]string, 0)
+	schemaHandler := pFile.SchemaHandler
+	for _, col := range schemaHandler.SchemaElements {
+		columns = append(columns, col.Name)
+	}
+
+	// Create a new DataFrame
+	df := CreateNewDataFrame(columns)
+
+	// Read the rows and add them to the DataFrame
+	for i := 0; i < int(pFile.GetNumRows()); i++ {
+		rowData := make([]interface{}, len(columns))
+		pFile.ReadByNumber(i)
+
+		// Convert row data to strings or desired data types
+		rowStrings := make([]string, len(columns))
+		for j, value := range rowData {
+			rowStrings[j] = fmt.Sprintf("%v", value)
+		}
+
+		df = df.AddRecord(rowStrings)
+	}
+
+	return df, nil
 }
