@@ -1062,38 +1062,16 @@ func (x Record) ConvertToDate(fieldName string, headers map[string]int) time.Tim
 	return result
 }
 
-// Validating .parquet file extension
-func isParquetFile(filepath string) bool {
-	file, err := os.Open(filepath)
-	if err != nil {
-		log.Fatal("File couldn't open:", err)
-	}
-	defer file.Close()
-
-	signature := make([]byte, 4) // enough to read the file's signature
-	_, err = file.Read(signature)
-	if err != nil {
-		log.Fatal("Unable to read:", err)
-	}
-
-	expectedSignature := []byte("PAR1") // Parquet file signature
-	expectedSignature2 := []byte("PAR2")
-
-	if !bytes.Equal(signature, expectedSignature) && !bytes.Equal(signature, expectedSignature2) {
-		log.Panic("File format not supported")
-		return false
-	}
-	return true
-}
-
 // Method to make New DataFrames out of Parquet Files
-func CreateDataFrameFromParquetFile(filePath string) (DataFrame, error) {
-	// Open the Parquet file
-	if !isParquetFile(filePath) {
-		panic("File format should be parquet")
+func CreateDataFrameFromParquetFile(filePath, fileName string) (DataFrame, error) {
+	if filePath[len(filePath)-1:] != "/" {
+		filePath = filePath + "/"
 	}
-
-	f, err := local.NewLocalFileReader(filePath)
+	if !strings.Contains(fileName, ".parquet") {
+		fileName = fileName + ".parquet"
+	}
+	// Open the Parquet file
+	f, err := local.NewLocalFileReader(filePath + fileName)
 	if err != nil {
 		return DataFrame{}, err
 	}
