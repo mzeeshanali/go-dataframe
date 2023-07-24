@@ -1254,10 +1254,11 @@ func TestRenameDuplicate(t *testing.T) {
 }
 
 func TestDfInParquet(t *testing.T) {
-	path := "/home/usman/Downloads/"
+	path := "./"
 	fname := "userdata2.parquet"
 	df, err := CreateDataFrameFromParquetFile(path, fname)
-	fmt.Print(df.FrameRecords)
+	//fmt.Print(df.FrameRecords)
+	t.Log(df.Headers)
 	if err == nil {
 		t.Error(err)
 	}

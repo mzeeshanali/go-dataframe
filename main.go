@@ -1081,7 +1081,7 @@ func CreateDataFrameFromParquetFile(filePath, fileName string) (DataFrame, error
 	pFile, err := reader.NewParquetReader(f, DataFrame{
 		FrameRecords: []Record{},
 		Headers:      map[string]int{},
-	}, 0) // alotting 0 cores for parralel processing
+	}, 0) // alotting 0 cores for parallel processing
 	if err != nil {
 		return DataFrame{}, err
 	}
