@@ -1078,7 +1078,10 @@ func CreateDataFrameFromParquetFile(filePath, fileName string) (DataFrame, error
 	defer f.Close()
 
 	// Create a Parquet reader
-	pFile, err := reader.NewParquetReader(f, nil, 4)
+	pFile, err := reader.NewParquetReader(f, DataFrame{
+		FrameRecords: []Record{},
+		Headers:      map[string]int{},
+	}, 0) // alotting 0 cores for parralel processing
 	if err != nil {
 		return DataFrame{}, err
 	}
@@ -1096,16 +1099,13 @@ func CreateDataFrameFromParquetFile(filePath, fileName string) (DataFrame, error
 
 	// Read the rows and add them to the DataFrame
 	for i := 0; i < int(pFile.GetNumRows()); i++ {
-		rowData := make([]interface{}, len(columns))
-		pFile.ReadByNumber(i)
-
-		// Convert row data to strings or desired data types
-		rowStrings := make([]string, len(columns))
-		for j, value := range rowData {
-			rowStrings[j] = fmt.Sprintf("%v", value)
+		// Read the row data
+		rowData := make([]string, len(columns))
+		if err := pFile.Read(&rowData); err != nil {
+			return DataFrame{}, err
 		}
 
-		df = df.AddRecord(rowStrings)
+		df = df.AddRecord(rowData)
 	}
 
 	return df, nil
