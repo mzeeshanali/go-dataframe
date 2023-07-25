@@ -867,7 +867,7 @@ func (frame *DataFrame) Sum(fieldName string) float64 {
 	for _, row := range frame.FrameRecords {
 		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 		if err != nil {
-			panic("Could Not Convert String to Float During Sum.")
+			log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
 		}
 		sum += val
 	}
@@ -893,13 +893,13 @@ func (frame *DataFrame) Max(fieldName string) float64 {
 		if i == 0 {
 			initialMax, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 			if err != nil {
-				panic("Could Not Convert String to Float During Sum.")
+				log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
 			}
 			maximum = initialMax
 		}
 		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 		if err != nil {
-			panic("Could Not Convert String to Float During Sum.")
+			log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
 		}
 
 		if val > maximum {
@@ -917,13 +917,13 @@ func (frame *DataFrame) Min(fieldName string) float64 {
 		if i == 0 {
 			initialMin, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 			if err != nil {
-				panic("Could Not Convert String to Float During Sum.")
+				log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
 			}
 			min = initialMin
 		}
 		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 		if err != nil {
-			panic("Could Not Convert String to Float During Sum.")
+			log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
 		}
 
 		if val < min {
@@ -973,8 +973,7 @@ func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {
 	csvFile, err := os.Create(path + fileName + ".csv")
 	defer csvFile.Close()
 	if err != nil {
-		fmt.Println("Error Creating CSV file")
-		return false
+		log.Fatalf("Error creating the blank csv file to save the data: %v", err)
 	}
 
 	w := csv.NewWriter(csvFile)
