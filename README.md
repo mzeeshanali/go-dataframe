@@ -239,7 +239,178 @@ if err != nil {
 }
 ```
 
+# DataFrame Comparison
+
+## Overview
+We are performing a task that involves reading multiple CSV files and concatenating them into a dataframe. Subsequently, we are comparing the performance of four different dataframes: go-dataframe (Go), Gota (Go), Pandas (Python), and petl (Python). This issue aims to provide a summary of our findings and compare the CPU consumption of the three approaches.
+
+## Task Details
+
+The task involves the following steps:
+
+1. Reading multiple CSV files into dataframes.
+2. Concatenating these dataframes into a dataframe.
+3. Writing the data from the dataframe to an output file.
+
+## CSV File Description:
+To provide an initial understanding of the CSV files, we executed the following command on one of the files:
+```bash
+head -n 10 filename.csv
+```
+Output:
+
+```graphql
+first_name,last_name,email,ssn,job,country,phone_number,user_name,zipcode,invalid_ssn,credit_card_number,credit_card_provider,credit_card_security_code,bban
+Steven,Moody,tiffanygonzalez@example.org,350-01-9267,"Presenter, broadcasting",Brazil,+1-506-628-4713x59809,barrettdustin,91323,807-49-0000,3547052816387430,JCB 15 digit,035,DARN48905985684949
+Jessica,Lee,morgananna@example.net,079-14-8787,"Administrator, arts",Nauru,001-741-688-4308x923,cshaffer,16377,041-36-0000,570340703620,VISA 13 digit,063,MDVS28676684054916
+Julia,Salazar,clarkcassidy@example.com,752-80-5107,Industrial buyer,Malawi,(783)902-5253x881,rosstiffany,16346,226-66-0000,3556315847497140,JCB 16 digit,6309,PRRE86261218230808
+Gordon,Wilson,wheelerandrea@example.com,506-71-9258,Transport planner,Ethiopia,001-417-632-4676,zharmon,97694,357-00-2323,348183228980368,JCB 16 digit,588,SDSD10099010640237
+Jerry,Vega,kenneth30@example.com,482-80-7647,Drilling engineer,Guyana,9406957013,samanthabryant,36140,165-73-0000,4365253782063545,VISA 16 digit,037,ZWLA04927443404778
+Gail,King,matthew31@example.net,299-67-3681,Administrator,Egypt,001-307-909-4257x3439,hreynolds,13001,696-02-0000,3538195498327397,JCB 15 digit,048,KIUZ58738028157566
+Edwin,Harris,aespinoza@example.com,252-85-5915,"Engineer, production",South Africa,947-484-3427x05066,bridgesnicholas,72419,026-82-0000,3592690115377331,JCB 16 digit,294,QENL33163152289485
+Mallory,Richard,amberwalters@example.org,199-53-6757,Energy manager,Slovenia,(624)349-1720x44315,nbrown,91155,569-27-0000,3581282497908686,VISA 13 digit,619,TUAY17591684176399
+Melinda,Gray,brandon61@example.net,687-13-1148,Adult nurse,Germany,(851)302-1375x9683,taylor81,51633,212-00-1490,3577099599061586,Mastercard,7736,KLPN65278851131949
+```
+
+## CPU Analysis:
+
+### Benchmarking Tool
+
+Hyperfine is a benchmarking tool for the command line that helps you compare the performance of your system's commands. With hyperfine, it becomes easy to see how different command-line tools, scripts, and command arguments affect system performance.
+
+#### How to install
+```bash
+brew install hyperfine
+```
+
+### Results
+#### 2 Small Files
+*(10 runs | 10 records each)*
+| Framework | Mean [s] | Min [s] | Max [s] | Relative |
+|:---|---:|---:|---:|---:|
+| `go-dataframe` | 1.148 ± 0.081 | 1.070 | 1.288 | 7.74 ± 0.62 |
+| `gota` | 0.752 ± 0.096 | 0.690 | 1.021 | 5.07 ± 0.68 |
+| `pandas` | 0.485 ± 0.024 | 0.456 | 0.515 | 3.27 ± 0.20 |
+| `petl` | 0.148 ± 0.006 | 0.137 | 0.156 | 1.00 |
+
+#### 2 Files
+*(10 runs | 100,000 records each)*
+| Framework | Mean [s] | Min [s] | Max [s] | Relative |
+|:---|---:|---:|---:|---:|
+| `go-dataframe` | 1.689 ± 0.089 | 1.579 | 1.874 | 1.00 |
+| `gota` | 2.282 ± 0.130 | 2.124 | 2.507 | 1.35 ± 0.10 |
+| `pandas` | 2.816 ± 0.100 | 2.693 | 2.997 | 1.67 ± 0.11 |
+| `petl` | 2.294 ± 0.049 | 2.257 | 2.404 | 1.36 ± 0.08 |
+
+
+#### 5 Files
+*(10 runs | 100,000 records each)*
+| Framework | Mean [s] | Min [s] | Max [s] | Relative |
+|:---|---:|---:|---:|---:|
+| `go-dataframe` | 2.583 ± 0.204 | 2.349 | 3.086 | 1.00 |
+| `gota` | 4.884 ± 0.316 | 4.462 | 5.374 | 1.89 ± 0.19 |
+| `pandas` | 6.527 ± 0.349 | 6.209 | 7.235 | 2.53 ± 0.24 |
+| `petl` | 8.117 ± 0.616 | 7.290 | 9.225 | 3.14 ± 0.34 |
+
+
+#### 10 Files
+*(10 runs | 100,000 records each)*
+| Framework | Mean [s] | Min [s] | Max [s] | Relative |
+|:---|---:|---:|---:|---:|
+| `go-dataframe` | 3.847 ± 0.253 | 3.585 | 4.280 | 1.00 |
+| `gota` | 9.127 ± 0.231 | 8.828 | 9.450 | 2.37 ± 0.17 |
+| `pandas` | 14.185 ± 1.546 | 12.161 | 15.737 | 3.69 ± 0.47 |
+| `petl` | 24.496 ± 3.328 | 21.238 | 30.702 | 6.37 ± 0.96 |
+
+#### 25 Files
+*(10 runs | 100,000 records each)*
+| Framework | Mean [s] | Min [s] | Max [s] | Relative |
+|:---|---:|---:|---:|---:|
+| `go-dataframe` | 8.212 ± 0.559 | 7.521 | 9.105 | 1.00 |
+| `gota` | 32.663 ± 1.640 | 30.131 | 35.154 | 3.98 ± 0.34 |
+| `pandas` | 30.790 ± 0.572 | 30.060 | 31.684 | 3.75 ± 0.26 |
+| `petl` | 107.274 ± 3.292 | 100.848 | 111.170 | 13.06 ± 0.98 |
+
+
+#### 50 Files 
+*(5 runs | 100,000 records each)*
+| Framework | Mean [s] | Min [s] | Max [s] | Relative |
+|:---|---:|---:|---:|---:|
+| `go-dataframe` | 16.669 ± 1.990 | 14.858 | 19.575 | 1.00 |
+| `gota` | 91.149 ± 4.158 | 88.691 | 98.500 | 5.47 ± 0.70 |
+| `pandas` | 60.217 ± 2.036 | 58.558 | 62.916 | 3.61 ± 0.45 |
+
+#### 100 Files
+*(5 runs | 100,000 records each)*
+| Framework | Mean [s] | Min [s] | Max [s] | Relative |
+|:---|---:|---:|---:|---:|
+| `go-dataframe` | 26.075 ± 0.522 | 25.426 | 26.518 | 1.00 |
+| `pandas` | 116.856 ± 0.334 | 116.315 | 117.220 | 4.48 ± 0.09 |
+
+## CPU Memory Comparison Graphs
+
+### Benchmarking Tool
+
+CMDBench is a quick and easy benchmarking tool for any command's CPU, memory and disk usage.
+
+#### How to install
+```bash
+git clone https://github.com/manzik/cmdbench.git
+cd cmdbench
+pip install .
+```
+
+### Results
+#### 2 Files
+*(100,000 records each)*
+| go-dataframe | gota | pandas | petl |
+|---|---|---|---|
+| ![go-dataframe](https://i.ibb.co/CwQHfqt/go-dataframe.png) | ![gota](https://serv1.dragndropz.com/user_images/2023_07_03/8283_URj6u2_gota.png) | ![pandas](https://serv1.dragndropz.com/user_images/2023_07_03/8284_ebMsVN_pandas.png) | ![petl](https://serv1.dragndropz.com/user_images/2023_07_03/8285_72MTkJ_petl.png) |
+
+
+#### 5 Files
+*(100,000 records each)*
+| go-dataframe | gota | pandas | petl |
+|---|---|---|---|
+| ![go-dataframe](https://i.ibb.co/tsG0WDn/go-dataframe.png) | ![gota](https://i.ibb.co/8gMR1JP/gota.png) | ![pandas](https://i.ibb.co/mSvtQbw/pandas.png) | ![petl](https://i.ibb.co/bBgyM5S/petl.png) |
+
+
+#### 10 Files
+*(100,000 records each)*
+| go-dataframe | gota | pandas | petl |
+|---|---|---|---|
+| ![go-dataframe](https://i.ibb.co/19v4Wr9/go-dataframe.png) | ![gota](https://i.ibb.co/Rhc2f70/gota.png) | ![pandas](https://i.ibb.co/NCzspqQ/pandas.png) | ![petl](https://i.ibb.co/0c6wFMk/petl.png) |
+
+#### 25 Files
+*(100,000 records each)*
+| go-dataframe | gota | pandas | petl |
+|---|---|---|---|
+| ![go-dataframe](https://i.ibb.co/b3VvJq7/go-dataframe.png) | ![gota](https://i.ibb.co/x3R0v6k/gota.png) | ![pandas](https://i.ibb.co/2ZthrZR/pandas.png) | ![petl](https://i.ibb.co/xqTwRkW/petl.png) |
+
+#### 50 Files 
+*(100,000 records each)*
+| go-dataframe | gota | pandas | petl |
+|---|---|---|---|
+| ![go-dataframe](https://i.ibb.co/tHtJxhN/go-dataframe.png) | ![gota](https://i.ibb.co/NYzNH1W/gota.png) | ![pandas](https://i.ibb.co/QMdp4JG/pandas.png) | ![petl](https://i.ibb.co/rZ08W2H/petl.png) |
+
+#### 100 Files
+*(100,000 records each)*
+| go-dataframe | pandas |
+|---|---|
+| ![go-dataframe](https://i.ibb.co/r0n8jvC/go-dataframe.png) | ![pandas](https://i.ibb.co/kK54wNh/pandas.png) |
+
+
+## References
+- [go-dataframe](https://github.com/kfultz07/go-dataframe)
+- [Gota](https://github.com/go-gota/gota)
+- [Pandas](https://pandas.pydata.org/)
+- [petl Docs](https://petl.readthedocs.io/en/stable/)
+- [Hyperfine Docs](https://www.linode.com/docs/guides/installing-and-using-hyperfine-on-linux/)
+- [CMDBench](https://github.com/manzik/cmdbench)
+
+
 ## Authors
 
 * [Kevin Fultz](https://github.com/kfultz07)
 * [Fahad Siddiqui](https://github.com/fahadsiddiqui)
+* [Israr Ali](https://github.com/IsrarAliKhan)
