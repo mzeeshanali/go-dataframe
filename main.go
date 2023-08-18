@@ -1015,12 +1015,31 @@ func (x Record) Val(fieldName string, headers map[string]int) string {
 	return x.Data[headers[fieldName]]
 }
 
+// Return the value of the specified field.
+// If the provided field name is not in the headers map, error is returned.
+func (x Record) SafeVal(fieldName string, headers map[string]int) (string, error) {
+	if _, ok := headers[fieldName]; !ok {
+		return "", fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName)
+	}
+	return x.Data[headers[fieldName]], nil
+}
+
 // Update the value in a specified field.
 func (x Record) Update(fieldName, value string, headers map[string]int) {
 	if _, ok := headers[fieldName]; !ok {
 		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
 	}
 	x.Data[headers[fieldName]] = value
+}
+
+// Update the value in a specified field.
+// If the provided field name is not in the headers map, error is returned.
+func (x Record) SafeUpdate(fieldName, value string, headers map[string]int) error {
+	if _, ok := headers[fieldName]; !ok {
+		return fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName)
+	}
+	x.Data[headers[fieldName]] = value
+	return nil
 }
 
 // Converts the value from a string to float64.
@@ -1032,13 +1051,33 @@ func (x Record) ConvertToFloat(fieldName string, headers map[string]int) float64
 	return value
 }
 
-// Converts the value from a string to int64.
+// Converts the value from a string to float64.
+func (x Record) SafeConvertToFloat(fieldName string, headers map[string]int) (float64, error) {
+    valueStr := x.Val(fieldName, headers)
+    value, err := strconv.ParseFloat(valueStr, 64)
+    if err != nil {
+        return 0, fmt.Errorf("Could not convert '%s' to float64: %v", valueStr, err)
+    }
+    return value, nil
+}
+
+// Converts the value from string to int64.
 func (x Record) ConvertToInt(fieldName string, headers map[string]int) int64 {
 	value, err := strconv.ParseInt(x.Val(fieldName, headers), 0, 64)
 	if err != nil {
 		log.Fatalf("Could Not Convert to int64: %v", err)
 	}
 	return value
+}
+
+// Converts the value from a string to int64.
+func (x Record) SafeConvertToInt(fieldName string, headers map[string]int) (int64, error) {
+	valueStr := x.Val(fieldName, headers)
+	value, err := strconv.ParseInt(valueStr, 0, 64)
+	if err != nil {
+		return 0, fmt.Errorf("Could not convert '%s' to int64: %v", valueStr, err)
+	}
+	return value, nil
 }
 
 // Converts various date strings into time.Time
