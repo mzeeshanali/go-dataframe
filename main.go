@@ -1053,7 +1053,10 @@ func (x Record) ConvertToFloat(fieldName string, headers map[string]int) float64
 
 // Converts the value from a string to float64.
 func (x Record) SafeConvertToFloat(fieldName string, headers map[string]int) (float64, error) {
-	valueStr := x.Val(fieldName, headers)
+	valueStr, err := x.SafeVal(fieldName, headers)
+	if err != nil {
+		return 0, err
+	}
 	value, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
 		return 0, fmt.Errorf("Could not convert '%s' to float64: %v", valueStr, err)
@@ -1072,7 +1075,10 @@ func (x Record) ConvertToInt(fieldName string, headers map[string]int) int64 {
 
 // Converts the value from a string to int64.
 func (x Record) SafeConvertToInt(fieldName string, headers map[string]int) (int64, error) {
-	valueStr := x.Val(fieldName, headers)
+	valueStr, err := x.SafeVal(fieldName, headers)
+	if err != nil {
+		return 0, err
+	}
 	value, err := strconv.ParseInt(valueStr, 0, 64)
 	if err != nil {
 		return 0, fmt.Errorf("Could not convert '%s' to int64: %v", valueStr, err)
