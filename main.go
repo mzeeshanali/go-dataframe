@@ -291,13 +291,34 @@ func (frame *DataFrame) ColumnVal(fieldName string, headers map[string]int) []st
 
 // Sort the dataframe by column name
 func (frame *DataFrame) Sort(columnName string) {
-	if frame == nil {
-		return
-	}
-
 	sort.Slice(frame.FrameRecords, func(i, j int) bool {
 		return frame.FrameRecords[i].Val(columnName, frame.Headers) <
 			frame.FrameRecords[j].Val(columnName, frame.Headers)
+	})
+}
+
+// Sort the dataframe by columns
+func (frame *DataFrame) SortByColumns(columns []string, sortOrderAscending bool) {
+
+	columnCount := len(columns)
+	sort.Slice(frame.FrameRecords, func(i, j int) bool {
+		record1 := frame.FrameRecords[i]
+		record2 := frame.FrameRecords[j]
+
+		for k := 0; k < columnCount; k++ {
+			val1 := record1.Val(columns[k], frame.Headers)
+			val2 := record2.Val(columns[k], frame.Headers)
+
+			if val1 != val2 {
+				if sortOrderAscending {
+					return val1 < val2
+				} else {
+					return val1 > val2
+				}
+			}
+		}
+
+		return true
 	})
 }
 
