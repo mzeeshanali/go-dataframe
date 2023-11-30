@@ -335,6 +335,7 @@ func (frame *DataFrame) SortByColumns(columns []string, sortOrders []bool, dataT
 					}
 					return floatVal1 > floatVal2
 				}
+				// bool
 			case reflect.Bool:
 				boolVal1, _ := strconv.ParseBool(val1)
 				boolVal2, _ := strconv.ParseBool(val2)
