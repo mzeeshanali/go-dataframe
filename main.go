@@ -317,25 +317,37 @@ func (frame *DataFrame) SortByColumns(columns []string, sortOrders []bool, dataT
 			// int
 			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 				reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-				intVal1, _ := strconv.Atoi(val1)
-				intVal2, _ := strconv.Atoi(val2)
+				intVal1, err := strconv.Atoi(val1)
+				if err != nil {
+					log.Fatalf("Error converting to int for column %s, error: %s", columns[k], err)
+				}
+				intVal2, err := strconv.Atoi(val2)
+				if err != nil {
+					log.Fatalf("Error converting to int for column %s, error: %s", columns[k], err)
+				}
 				if intVal1 != intVal2 {
 					if sortOrders[k] {
 						return intVal1 < intVal2
 					}
 					return intVal1 > intVal2
 				}
-				// float
+			// float
 			case reflect.Float32, reflect.Float64:
-				floatVal1, _ := strconv.ParseFloat(val1, 64)
-				floatVal2, _ := strconv.ParseFloat(val2, 64)
+				floatVal1, err := strconv.ParseFloat(val1, 64)
+				if err != nil {
+					log.Fatalf("Error converting to float for column %s, error: %s", columns[k], err)
+				}
+				floatVal2, err := strconv.ParseFloat(val2, 64)
+				if err != nil {
+					log.Fatalf("Error converting to float for column %s, error: %s", columns[k], err)
+				}
 				if floatVal1 != floatVal2 {
 					if sortOrders[k] {
 						return floatVal1 < floatVal2
 					}
 					return floatVal1 > floatVal2
 				}
-				// string
+			// string
 			case reflect.String:
 				if val1 != val2 {
 					if sortOrders[k] {
@@ -345,7 +357,6 @@ func (frame *DataFrame) SortByColumns(columns []string, sortOrders []bool, dataT
 				}
 			}
 		}
-
 		return true
 	})
 }
