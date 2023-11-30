@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -300,9 +301,9 @@ func (frame *DataFrame) Sort(columnName string) {
 }
 
 // Sort the dataframe by columns
-func (frame *DataFrame) SortByColumns(columns []string, sortOrderAscending bool) {
-
+func (frame *DataFrame) SortByColumns(columns []string, sortOrders []bool, dataTypes []interface{}) {
 	columnCount := len(columns)
+
 	sort.Slice(frame.FrameRecords, func(i, j int) bool {
 		record1 := frame.FrameRecords[i]
 		record2 := frame.FrameRecords[j]
@@ -311,15 +312,51 @@ func (frame *DataFrame) SortByColumns(columns []string, sortOrderAscending bool)
 			val1 := record1.Val(columns[k], frame.Headers)
 			val2 := record2.Val(columns[k], frame.Headers)
 
-			if val1 != val2 {
-				if sortOrderAscending {
-					return val1 < val2
-				} else {
+			// handle data types
+			switch reflect.ValueOf(dataTypes[k]).Kind() {
+			// int
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+				reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				intVal1, err := strconv.Atoi(val1)
+				if err != nil {
+					log.Fatalf("Error converting to int for column %s, error: %s", columns[k], err)
+				}
+				intVal2, err := strconv.Atoi(val2)
+				if err != nil {
+					log.Fatalf("Error converting to int for column %s, error: %s", columns[k], err)
+				}
+				if intVal1 != intVal2 {
+					if sortOrders[k] {
+						return intVal1 < intVal2
+					}
+					return intVal1 > intVal2
+				}
+			// float
+			case reflect.Float32, reflect.Float64:
+				floatVal1, err := strconv.ParseFloat(val1, 64)
+				if err != nil {
+					log.Fatalf("Error converting to float for column %s, error: %s", columns[k], err)
+				}
+				floatVal2, err := strconv.ParseFloat(val2, 64)
+				if err != nil {
+					log.Fatalf("Error converting to float for column %s, error: %s", columns[k], err)
+				}
+				if floatVal1 != floatVal2 {
+					if sortOrders[k] {
+						return floatVal1 < floatVal2
+					}
+					return floatVal1 > floatVal2
+				}
+			// string
+			case reflect.String:
+				if val1 != val2 {
+					if sortOrders[k] {
+						return val1 < val2
+					}
 					return val1 > val2
 				}
 			}
 		}
-
 		return true
 	})
 }
