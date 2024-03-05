@@ -1252,3 +1252,23 @@ func TestRenameDuplicate(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestWhere(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
+	df = df.Where("Last Name", "==", "Wiedmann")
+	fmt.Printf("df: %v\n", df)
+
+	if df.CountRecords() != 2 {
+		t.Error("Where: Record count is not correct.")
+	}
+
+	ids := []string{"4", "5"}
+	foundIds := df.Unique("ID")
+
+	for i, id := range foundIds {
+		if id != ids[i] {
+			t.Error("Where: Records do not match.")
+		}
+	}
+}

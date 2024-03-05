@@ -468,6 +468,52 @@ func (frame DataFrame) Copy() DataFrame {
 	return df
 }
 
+func (frame DataFrame) Where(fieldName, operator, value string) DataFrame {
+	headers := []string{}
+
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				headers = append(headers, k)
+			}
+		}
+	}
+	newFrame := CreateNewDataFrame(headers)
+
+	for i := 0; i < len(frame.FrameRecords); i++ {
+		val := frame.FrameRecords[i].Data[frame.Headers[fieldName]]
+
+		switch operator {
+		case "==":
+			if val == value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		case "!=":
+			if val != value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		case ">":
+			if val > value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		case "<":
+			if val < value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		case ">=":
+			if val >= value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		case "<=":
+			if val <= value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		}
+	}
+
+	return newFrame
+}
+
 // Generates a new filtered DataFrame.
 // New DataFrame will be kept in same order as original.
 func (frame DataFrame) Filtered(fieldName string, value ...string) DataFrame {

@@ -1,10 +1,13 @@
 # go-dataframe
+
 A simple package to abstract away the process of creating usable DataFrames for data analytics. This package is heavily inspired by the amazing Python library, Pandas.
 
 ## Generate DataFrame
+
 Utilize the CreateDataFrame function to create a DataFrame from an existing CSV file or create an empty DataFrame with the CreateNewDataFrame function. The user can then iterate over the DataFrame to perform the intended tasks. All data in the DataFrame is a string by default. There are various methods to provide additional functionality including: converting data types, update values, filter, concatenate, and more. Please use the below examples or explore the code to learn more.
 
 ## Import Package
+
 ```go
 import (
     "fmt"
@@ -14,6 +17,7 @@ import (
 ```
 
 ## Load CSV into DataFrame, create a new field, and save
+
 ```go
 path := "/Users/Name/Desktop/"
 
@@ -39,8 +43,10 @@ df.SaveDataFrame(path, "NewFileName")
 ```
 
 ## Concurrently load multiple CSV files into DataFrames
+
 Tests performed utilized four files with a total of 5,746,452 records and a varing number of columns. Results indicated an average total load time of 8.81 seconds when loaded sequentially and 4.06 seconds when loaded concurrently utilizing the LoadFrames function. An overall 54% speed improvement. Files must all be in the same directory. Results are returned in a
 slice in the same order as provided in the files parameter.
+
 ```go
 filePath := "/Users/Name/Desktop/"
 files := []string{
@@ -64,7 +70,9 @@ dfFive := results[4]
 ```
 
 ## Stream CSV data
+
 Stream rows of data from a csv file to be processed. Streaming data is preferred when dealing with large files and memory usage needs to be considered. Results are streamed via a channel with a StreamingRecord type. A struct with only desired fields could be created and either operated on sequentially or stored in a slice for later use.
+
 ```go
 type Product struct {
     name string
@@ -97,6 +105,7 @@ for row := range c {
 ```
 
 ## AWS S3 Cloud Storage
+
 ```go
 // Download a DataFrame from an S3 bucket
 path := "/Users/Name/Desktop/" // File path
@@ -114,7 +123,14 @@ if err != nil {
 }
 ```
 
+## Filter Out Dataframe Rows Using .Where()
+
+```go
+df = df.Where("Last Name", "==", "Wiedmann")
+```
+
 ## Various methods to filter DataFrames
+
 ```go
 // Variadic methods that generate a new DataFrame
 dfFil := df.Filtered("Last Name", "McCarlson", "Benison", "Stephenson")
@@ -148,6 +164,7 @@ if err != nil {
 ```
 
 ## Add record to DataFrame and later update
+
 ```go
 // Add a new record
 data := [6]string{"11", "2022-01-01", "123", "456", "Kevin", "Kevison"}
@@ -163,6 +180,7 @@ for _, row := range df.FrameRecords {
 ```
 
 ## Concatenate DataFrames
+
 ```go
 // ConcatFrames uses a pointer to the DataFrame being appended.
 // Both DataFrames must have the same columns in the same order.
@@ -173,6 +191,7 @@ if err != nil {
 ```
 
 ## Rename a Column
+
 ```go
 // Rename an existing column in a DataFrame
 // First parameter provides the original column name to be updated.
@@ -184,6 +203,7 @@ if err != nil {
 ```
 
 ## Merge two DataFrames
+
 ```go
 df := CreateDataFrame(path, "TestData.csv")
 dfRight := CreateDataFrame(path, "TestDataRight.csv")
@@ -202,6 +222,7 @@ df = df.InnerMerge(&dfRight, "ID")
 ```
 
 ## Various Tools
+
 ```go
 // Total rows
 total := df.CountRecords()
@@ -221,6 +242,7 @@ df2 := df.Copy()
 ```
 
 ## Mathematics
+
 ```go
 // Sum a numerical column
 sum := df.Sum("Cost")
@@ -242,6 +264,7 @@ if err != nil {
 # DataFrame Comparison
 
 ## Overview
+
 We are performing a task that involves reading multiple CSV files and concatenating them into a dataframe. Subsequently, we are comparing the performance of four different dataframes: go-dataframe (Go), Gota (Go), Pandas (Python), and petl (Python). This issue aims to provide a summary of our findings and compare the CPU consumption of the three approaches.
 
 ## Task Details
@@ -253,10 +276,13 @@ The task involves the following steps:
 3. Writing the data from the dataframe to an output file.
 
 ## CSV File Description:
+
 To provide an initial understanding of the CSV files, we executed the following command on one of the files:
+
 ```bash
 head -n 10 filename.csv
 ```
+
 Output:
 
 ```graphql
@@ -279,13 +305,16 @@ Melinda,Gray,brandon61@example.net,687-13-1148,Adult nurse,Germany,(851)302-1375
 Hyperfine is a benchmarking tool for the command line that helps you compare the performance of your system's commands. With hyperfine, it becomes easy to see how different command-line tools, scripts, and command arguments affect system performance.
 
 #### How to install
+
 ```bash
 brew install hyperfine
 ```
 
 ### Results
+
 #### 2 Small Files
-*(10 runs | 10 records each)*
+
+_(10 runs | 10 records each)_
 | Framework | Mean [s] | Min [s] | Max [s] | Relative |
 |:---|---:|---:|---:|---:|
 | `go-dataframe` | 1.148 ± 0.081 | 1.070 | 1.288 | 7.74 ± 0.62 |
@@ -294,7 +323,8 @@ brew install hyperfine
 | `petl` | 0.148 ± 0.006 | 0.137 | 0.156 | 1.00 |
 
 #### 2 Files
-*(10 runs | 100,000 records each)*
+
+_(10 runs | 100,000 records each)_
 | Framework | Mean [s] | Min [s] | Max [s] | Relative |
 |:---|---:|---:|---:|---:|
 | `go-dataframe` | 1.689 ± 0.089 | 1.579 | 1.874 | 1.00 |
@@ -302,9 +332,9 @@ brew install hyperfine
 | `pandas` | 2.816 ± 0.100 | 2.693 | 2.997 | 1.67 ± 0.11 |
 | `petl` | 2.294 ± 0.049 | 2.257 | 2.404 | 1.36 ± 0.08 |
 
-
 #### 5 Files
-*(10 runs | 100,000 records each)*
+
+_(10 runs | 100,000 records each)_
 | Framework | Mean [s] | Min [s] | Max [s] | Relative |
 |:---|---:|---:|---:|---:|
 | `go-dataframe` | 2.583 ± 0.204 | 2.349 | 3.086 | 1.00 |
@@ -312,9 +342,9 @@ brew install hyperfine
 | `pandas` | 6.527 ± 0.349 | 6.209 | 7.235 | 2.53 ± 0.24 |
 | `petl` | 8.117 ± 0.616 | 7.290 | 9.225 | 3.14 ± 0.34 |
 
-
 #### 10 Files
-*(10 runs | 100,000 records each)*
+
+_(10 runs | 100,000 records each)_
 | Framework | Mean [s] | Min [s] | Max [s] | Relative |
 |:---|---:|---:|---:|---:|
 | `go-dataframe` | 3.847 ± 0.253 | 3.585 | 4.280 | 1.00 |
@@ -323,7 +353,8 @@ brew install hyperfine
 | `petl` | 24.496 ± 3.328 | 21.238 | 30.702 | 6.37 ± 0.96 |
 
 #### 25 Files
-*(10 runs | 100,000 records each)*
+
+_(10 runs | 100,000 records each)_
 | Framework | Mean [s] | Min [s] | Max [s] | Relative |
 |:---|---:|---:|---:|---:|
 | `go-dataframe` | 8.212 ± 0.559 | 7.521 | 9.105 | 1.00 |
@@ -331,9 +362,9 @@ brew install hyperfine
 | `pandas` | 30.790 ± 0.572 | 30.060 | 31.684 | 3.75 ± 0.26 |
 | `petl` | 107.274 ± 3.292 | 100.848 | 111.170 | 13.06 ± 0.98 |
 
+#### 50 Files
 
-#### 50 Files 
-*(5 runs | 100,000 records each)*
+_(5 runs | 100,000 records each)_
 | Framework | Mean [s] | Min [s] | Max [s] | Relative |
 |:---|---:|---:|---:|---:|
 | `go-dataframe` | 16.669 ± 1.990 | 14.858 | 19.575 | 1.00 |
@@ -341,7 +372,8 @@ brew install hyperfine
 | `pandas` | 60.217 ± 2.036 | 58.558 | 62.916 | 3.61 ± 0.45 |
 
 #### 100 Files
-*(5 runs | 100,000 records each)*
+
+_(5 runs | 100,000 records each)_
 | Framework | Mean [s] | Min [s] | Max [s] | Relative |
 |:---|---:|---:|---:|---:|
 | `go-dataframe` | 26.075 ± 0.522 | 25.426 | 26.518 | 1.00 |
@@ -354,6 +386,7 @@ brew install hyperfine
 CMDBench is a quick and easy benchmarking tool for any command's CPU, memory and disk usage.
 
 #### How to install
+
 ```bash
 git clone https://github.com/manzik/cmdbench.git
 cd cmdbench
@@ -361,46 +394,51 @@ pip install .
 ```
 
 ### Results
+
 #### 2 Files
-*(100,000 records each)*
+
+_(100,000 records each)_
 | go-dataframe | gota | pandas | petl |
 |---|---|---|---|
 | ![go-dataframe](https://i.ibb.co/CwQHfqt/go-dataframe.png) | ![gota](https://serv1.dragndropz.com/user_images/2023_07_03/8283_URj6u2_gota.png) | ![pandas](https://serv1.dragndropz.com/user_images/2023_07_03/8284_ebMsVN_pandas.png) | ![petl](https://serv1.dragndropz.com/user_images/2023_07_03/8285_72MTkJ_petl.png) |
 
-
 #### 5 Files
-*(100,000 records each)*
+
+_(100,000 records each)_
 | go-dataframe | gota | pandas | petl |
 |---|---|---|---|
 | ![go-dataframe](https://i.ibb.co/tsG0WDn/go-dataframe.png) | ![gota](https://i.ibb.co/8gMR1JP/gota.png) | ![pandas](https://i.ibb.co/mSvtQbw/pandas.png) | ![petl](https://i.ibb.co/bBgyM5S/petl.png) |
 
-
 #### 10 Files
-*(100,000 records each)*
+
+_(100,000 records each)_
 | go-dataframe | gota | pandas | petl |
 |---|---|---|---|
 | ![go-dataframe](https://i.ibb.co/19v4Wr9/go-dataframe.png) | ![gota](https://i.ibb.co/Rhc2f70/gota.png) | ![pandas](https://i.ibb.co/NCzspqQ/pandas.png) | ![petl](https://i.ibb.co/0c6wFMk/petl.png) |
 
 #### 25 Files
-*(100,000 records each)*
+
+_(100,000 records each)_
 | go-dataframe | gota | pandas | petl |
 |---|---|---|---|
 | ![go-dataframe](https://i.ibb.co/b3VvJq7/go-dataframe.png) | ![gota](https://i.ibb.co/x3R0v6k/gota.png) | ![pandas](https://i.ibb.co/2ZthrZR/pandas.png) | ![petl](https://i.ibb.co/xqTwRkW/petl.png) |
 
-#### 50 Files 
-*(100,000 records each)*
+#### 50 Files
+
+_(100,000 records each)_
 | go-dataframe | gota | pandas | petl |
 |---|---|---|---|
 | ![go-dataframe](https://i.ibb.co/tHtJxhN/go-dataframe.png) | ![gota](https://i.ibb.co/NYzNH1W/gota.png) | ![pandas](https://i.ibb.co/QMdp4JG/pandas.png) | ![petl](https://i.ibb.co/rZ08W2H/petl.png) |
 
 #### 100 Files
-*(100,000 records each)*
+
+_(100,000 records each)_
 | go-dataframe | pandas |
 |---|---|
 | ![go-dataframe](https://i.ibb.co/r0n8jvC/go-dataframe.png) | ![pandas](https://i.ibb.co/kK54wNh/pandas.png) |
 
-
 ## References
+
 - [go-dataframe](https://github.com/kfultz07/go-dataframe)
 - [Gota](https://github.com/go-gota/gota)
 - [Pandas](https://pandas.pydata.org/)
@@ -408,9 +446,8 @@ pip install .
 - [Hyperfine Docs](https://www.linode.com/docs/guides/installing-and-using-hyperfine-on-linux/)
 - [CMDBench](https://github.com/manzik/cmdbench)
 
-
 ## Authors
 
-* [Kevin Fultz](https://github.com/kfultz07)
-* [Fahad Siddiqui](https://github.com/fahadsiddiqui)
-* [Israr Ali](https://github.com/IsrarAliKhan)
+- [Kevin Fultz](https://github.com/kfultz07)
+- [Fahad Siddiqui](https://github.com/fahadsiddiqui)
+- [Israr Ali](https://github.com/IsrarAliKhan)
