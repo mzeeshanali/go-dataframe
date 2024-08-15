@@ -347,7 +347,7 @@ func (frame *DataFrame) Rename(originalColumnName, newColumnName string) error {
 }
 
 // Add a new record to the DataFrame
-func (frame DataFrame) AddRecord(newData []string) DataFrame {
+func (frame *DataFrame) AddRecord(newData []string) DataFrame {
 	x := Record{Data: []string{}}
 
 	for _, each := range newData {
@@ -356,7 +356,7 @@ func (frame DataFrame) AddRecord(newData []string) DataFrame {
 
 	frame.FrameRecords = append(frame.FrameRecords, x)
 
-	return frame
+	return *frame
 }
 
 // Provides a slice of columns in order
