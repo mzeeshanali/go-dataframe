@@ -9,10 +9,13 @@ import (
 	"log"
 	"math"
 	"os"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 type Record struct {
@@ -275,15 +278,86 @@ func Merge(dfs ...DataFrame) (DataFrame, error) {
 	return mdf, nil
 }
 
-// Sort the dataframe by column name
-func (frame *DataFrame) Sort(columnName string) {
-	if frame == nil {
-		return
+// Return the values of the specified field
+func (frame *DataFrame) ColumnVal(fieldName string, headers map[string]int) []string {
+	if _, ok := headers[fieldName]; !ok {
+		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
 	}
 
+	var fieldVals []string
+	records := len(frame.FrameRecords)
+	for i := 0; i < records; i++ {
+		fieldVals = append(fieldVals, frame.FrameRecords[i].Data[headers[fieldName]])
+	}
+	return fieldVals
+}
+
+// Sort the dataframe by column name
+func (frame *DataFrame) Sort(columnName string) {
 	sort.Slice(frame.FrameRecords, func(i, j int) bool {
 		return frame.FrameRecords[i].Val(columnName, frame.Headers) <
 			frame.FrameRecords[j].Val(columnName, frame.Headers)
+	})
+}
+
+// Sort the dataframe by columns
+func (frame *DataFrame) SortByColumns(columns []string, sortOrders []bool, dataTypes []interface{}) {
+	columnCount := len(columns)
+
+	sort.Slice(frame.FrameRecords, func(i, j int) bool {
+		record1 := frame.FrameRecords[i]
+		record2 := frame.FrameRecords[j]
+
+		for k := 0; k < columnCount; k++ {
+			val1 := record1.Val(columns[k], frame.Headers)
+			val2 := record2.Val(columns[k], frame.Headers)
+
+			// handle data types
+			switch reflect.ValueOf(dataTypes[k]).Kind() {
+			// int
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+				reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				intVal1, err := strconv.Atoi(val1)
+				if err != nil {
+					log.Fatalf("Error converting to int for column %s, error: %s", columns[k], err)
+				}
+				intVal2, err := strconv.Atoi(val2)
+				if err != nil {
+					log.Fatalf("Error converting to int for column %s, error: %s", columns[k], err)
+				}
+				if intVal1 != intVal2 {
+					if sortOrders[k] {
+						return intVal1 < intVal2
+					}
+					return intVal1 > intVal2
+				}
+			// float
+			case reflect.Float32, reflect.Float64:
+				floatVal1, err := strconv.ParseFloat(val1, 64)
+				if err != nil {
+					log.Fatalf("Error converting to float for column %s, error: %s", columns[k], err)
+				}
+				floatVal2, err := strconv.ParseFloat(val2, 64)
+				if err != nil {
+					log.Fatalf("Error converting to float for column %s, error: %s", columns[k], err)
+				}
+				if floatVal1 != floatVal2 {
+					if sortOrders[k] {
+						return floatVal1 < floatVal2
+					}
+					return floatVal1 > floatVal2
+				}
+			// string
+			case reflect.String:
+				if val1 != val2 {
+					if sortOrders[k] {
+						return val1 < val2
+					}
+					return val1 > val2
+				}
+			}
+		}
+		return true
 	})
 }
 
@@ -307,7 +381,7 @@ func (frame DataFrame) RemoveColumns(columns ...string) DataFrame {
 	approvedColumns := []string{}
 
 	for _, col := range frame.Columns() {
-		if !contains(columns, col) {
+		if !slices.Contains(columns, col) {
 			approvedColumns = append(approvedColumns, col)
 		}
 	}
@@ -328,12 +402,12 @@ func (frame *DataFrame) Rename(originalColumnName, newColumnName string) error {
 	}
 
 	// Check original column name is found in DataFrame
-	if contains(columns, originalColumnName) == false {
+	if !slices.Contains(columns, originalColumnName) {
 		return errors.New("The original column name provided was not found in the DataFrame")
 	}
 
 	// Check new column name does not already exist
-	if contains(columns, newColumnName) == true {
+	if slices.Contains(columns, newColumnName) {
 		return errors.New("The provided new column name already exists in the DataFrame and is not allowed")
 	}
 
@@ -390,6 +464,52 @@ func (frame DataFrame) Copy() DataFrame {
 		df.AddRecord(frame.FrameRecords[i].Data)
 	}
 	return df
+}
+
+func (frame DataFrame) Where(fieldName, operator, value string) DataFrame {
+	headers := []string{}
+
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				headers = append(headers, k)
+			}
+		}
+	}
+	newFrame := CreateNewDataFrame(headers)
+
+	for i := 0; i < len(frame.FrameRecords); i++ {
+		val := frame.FrameRecords[i].Data[frame.Headers[fieldName]]
+
+		switch operator {
+		case "==":
+			if val == value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		case "!=":
+			if val != value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		case ">":
+			if val > value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		case "<":
+			if val < value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		case ">=":
+			if val >= value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		case "<=":
+			if val <= value {
+				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			}
+		}
+	}
+
+	return newFrame
 }
 
 // Generates a new filtered DataFrame.
@@ -588,21 +708,12 @@ func (frame *DataFrame) NewField(fieldName string) {
 	frame.Headers[fieldName] = len(frame.Headers)
 }
 
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-	return false
-}
-
 // Return a slice of all unique values found in a specified field.
 func (frame *DataFrame) Unique(fieldName string) []string {
 	var results []string
 
 	for _, row := range frame.FrameRecords {
-		if contains(results, row.Val(fieldName, frame.Headers)) != true {
+		if !slices.Contains(results, row.Val(fieldName, frame.Headers)) {
 			results = append(results, row.Val(fieldName, frame.Headers))
 		}
 	}
@@ -818,7 +929,7 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 	// Add approved records to new DataFrame.
 	for i, row := range frame.FrameRecords {
 		currentKey := row.Val(primaryKey, frame.Headers)
-		if contains(approvedPrimaryKeys, currentKey) {
+		if slices.Contains(approvedPrimaryKeys, currentKey) {
 			lData := frame.FrameRecords[i].Data
 			rData := dfRight.FrameRecords[rLookup[currentKey]].Data
 
@@ -851,7 +962,7 @@ func (frame *DataFrame) Sum(fieldName string) float64 {
 	for _, row := range frame.FrameRecords {
 		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 		if err != nil {
-			panic("Could Not Convert String to Float During Sum.")
+			log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
 		}
 		sum += val
 	}
@@ -877,13 +988,13 @@ func (frame *DataFrame) Max(fieldName string) float64 {
 		if i == 0 {
 			initialMax, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 			if err != nil {
-				panic("Could Not Convert String to Float During Sum.")
+				log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
 			}
 			maximum = initialMax
 		}
 		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 		if err != nil {
-			panic("Could Not Convert String to Float During Sum.")
+			log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
 		}
 
 		if val > maximum {
@@ -901,13 +1012,13 @@ func (frame *DataFrame) Min(fieldName string) float64 {
 		if i == 0 {
 			initialMin, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 			if err != nil {
-				panic("Could Not Convert String to Float During Sum.")
+				log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
 			}
 			min = initialMin
 		}
 		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 		if err != nil {
-			panic("Could Not Convert String to Float During Sum.")
+			log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
 		}
 
 		if val < min {
@@ -957,8 +1068,7 @@ func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {
 	csvFile, err := os.Create(path + fileName + ".csv")
 	defer csvFile.Close()
 	if err != nil {
-		fmt.Println("Error Creating CSV file")
-		return false
+		log.Fatalf("Error creating the blank csv file to save the data: %v", err)
 	}
 
 	w := csv.NewWriter(csvFile)
@@ -1000,12 +1110,31 @@ func (x Record) Val(fieldName string, headers map[string]int) string {
 	return x.Data[headers[fieldName]]
 }
 
+// Return the value of the specified field.
+// If the provided field name is not in the headers map, error is returned.
+func (x Record) SafeVal(fieldName string, headers map[string]int) (string, error) {
+	if _, ok := headers[fieldName]; !ok {
+		return "", fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName)
+	}
+	return x.Data[headers[fieldName]], nil
+}
+
 // Update the value in a specified field.
 func (x Record) Update(fieldName, value string, headers map[string]int) {
 	if _, ok := headers[fieldName]; !ok {
 		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
 	}
 	x.Data[headers[fieldName]] = value
+}
+
+// Update the value in a specified field.
+// If the provided field name is not in the headers map, error is returned.
+func (x Record) SafeUpdate(fieldName, value string, headers map[string]int) error {
+	if _, ok := headers[fieldName]; !ok {
+		return fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName)
+	}
+	x.Data[headers[fieldName]] = value
+	return nil
 }
 
 // Converts the value from a string to float64.
@@ -1017,13 +1146,39 @@ func (x Record) ConvertToFloat(fieldName string, headers map[string]int) float64
 	return value
 }
 
-// Converts the value from a string to int64.
+// Converts the value from a string to float64.
+func (x Record) SafeConvertToFloat(fieldName string, headers map[string]int) (float64, error) {
+	valueStr, err := x.SafeVal(fieldName, headers)
+	if err != nil {
+		return 0, err
+	}
+	value, err := strconv.ParseFloat(valueStr, 64)
+	if err != nil {
+		return 0, fmt.Errorf("Could not convert '%s' to float64: %v", valueStr, err)
+	}
+	return value, nil
+}
+
+// Converts the value from string to int64.
 func (x Record) ConvertToInt(fieldName string, headers map[string]int) int64 {
 	value, err := strconv.ParseInt(x.Val(fieldName, headers), 0, 64)
 	if err != nil {
 		log.Fatalf("Could Not Convert to int64: %v", err)
 	}
 	return value
+}
+
+// Converts the value from a string to int64.
+func (x Record) SafeConvertToInt(fieldName string, headers map[string]int) (int64, error) {
+	valueStr, err := x.SafeVal(fieldName, headers)
+	if err != nil {
+		return 0, err
+	}
+	value, err := strconv.ParseInt(valueStr, 0, 64)
+	if err != nil {
+		return 0, fmt.Errorf("Could not convert '%s' to int64: %v", valueStr, err)
+	}
+	return value, nil
 }
 
 // Converts various date strings into time.Time
