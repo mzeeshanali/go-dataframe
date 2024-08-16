@@ -370,7 +370,7 @@ func (frame DataFrame) KeepColumns(columns []string) DataFrame {
 		for _, column := range columns {
 			newData = append(newData, row.Val(column, frame.Headers))
 		}
-		df = df.AddRecord(newData)
+		df.AddRecord(newData)
 	}
 
 	return df
@@ -421,7 +421,7 @@ func (frame *DataFrame) Rename(originalColumnName, newColumnName string) error {
 }
 
 // Add a new record to the DataFrame
-func (frame DataFrame) AddRecord(newData []string) DataFrame {
+func (frame *DataFrame) AddRecord(newData []string) {
 	x := Record{Data: []string{}}
 
 	for _, each := range newData {
@@ -429,8 +429,6 @@ func (frame DataFrame) AddRecord(newData []string) DataFrame {
 	}
 
 	frame.FrameRecords = append(frame.FrameRecords, x)
-
-	return frame
 }
 
 // Add a new record to the DataFrame
@@ -474,7 +472,7 @@ func (frame DataFrame) Copy() DataFrame {
 	df := CreateNewDataFrame(headers)
 
 	for i := 0; i < len(frame.FrameRecords); i++ {
-		df = df.AddRecord(frame.FrameRecords[i].Data)
+		df.AddRecord(frame.FrameRecords[i].Data)
 	}
 	return df
 }
@@ -497,27 +495,27 @@ func (frame DataFrame) Where(fieldName, operator, value string) DataFrame {
 		switch operator {
 		case "==":
 			if val == value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		case "!=":
 			if val != value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		case ">":
 			if val > value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		case "<":
 			if val < value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		case ">=":
 			if val >= value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		case "<=":
 			if val <= value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		}
 	}
@@ -541,7 +539,7 @@ func (frame DataFrame) Filtered(fieldName string, value ...string) DataFrame {
 
 	for i := 0; i < len(frame.FrameRecords); i++ {
 		if slices.Contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) {
-			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
 
@@ -571,7 +569,7 @@ func (frame DataFrame) GreaterThanOrEqualTo(fieldName string, value float64) (Da
 		}
 
 		if val >= value {
-			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
 	return newFrame, nil
@@ -600,7 +598,7 @@ func (frame DataFrame) LessThanOrEqualTo(fieldName string, value float64) (DataF
 		}
 
 		if val <= value {
-			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
 	return newFrame, nil
@@ -622,7 +620,7 @@ func (frame DataFrame) Exclude(fieldName string, value ...string) DataFrame {
 
 	for i := 0; i < len(frame.FrameRecords); i++ {
 		if !slices.Contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) {
-			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
 
@@ -650,7 +648,7 @@ func (frame DataFrame) FilteredAfter(fieldName, desiredDate string) DataFrame {
 		isAfter := recordDate.After(dateConverter(desiredDate))
 
 		if isAfter {
-			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
 	return newFrame
@@ -677,7 +675,7 @@ func (frame DataFrame) FilteredBefore(fieldName, desiredDate string) DataFrame {
 		isBefore := recordDate.Before(dateConverter(desiredDate))
 
 		if isBefore {
-			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
 
@@ -706,7 +704,7 @@ func (frame DataFrame) FilteredBetween(fieldName, startDate, endDate string) Dat
 		isBefore := recordDate.Before(dateConverter(endDate))
 
 		if isAfter && isBefore {
-			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+			newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
 
@@ -958,7 +956,7 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 				}
 			}
 
-			dfNew = dfNew.AddRecord(data)
+			dfNew.AddRecord(data)
 		}
 	}
 	return dfNew
