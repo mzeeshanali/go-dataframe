@@ -433,6 +433,17 @@ func (frame DataFrame) AddRecord(newData []string) DataFrame {
 	return frame
 }
 
+// Add a new record to the DataFrame
+func (frame *DataFrame) AddRecordByReference(newData []string) {
+	x := Record{Data: []string{}}
+
+	for _, each := range newData {
+		x.Data = append(x.Data, each)
+	}
+
+	frame.FrameRecords = append(frame.FrameRecords, x)
+}
+
 // Provides a slice of columns in order
 func (frame DataFrame) Columns() []string {
 	var columns []string
