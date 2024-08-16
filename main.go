@@ -484,27 +484,27 @@ func (frame DataFrame) Where(fieldName, operator, value string) DataFrame {
 		switch operator {
 		case "==":
 			if val == value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		case "!=":
 			if val != value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		case ">":
 			if val > value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		case "<":
 			if val < value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		case ">=":
 			if val >= value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		case "<=":
 			if val <= value {
-				newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+				newFrame.AddRecord(frame.FrameRecords[i].Data)
 			}
 		}
 	}
@@ -527,7 +527,7 @@ func (frame DataFrame) Filtered(fieldName string, value ...string) DataFrame {
 	newFrame := CreateNewDataFrame(headers)
 
 	for i := 0; i < len(frame.FrameRecords); i++ {
-		if contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) == true {
+		if slices.Contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) {
 			newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
@@ -608,7 +608,7 @@ func (frame DataFrame) Exclude(fieldName string, value ...string) DataFrame {
 	newFrame := CreateNewDataFrame(headers)
 
 	for i := 0; i < len(frame.FrameRecords); i++ {
-		if contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) == false {
+		if !slices.Contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) {
 			newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
