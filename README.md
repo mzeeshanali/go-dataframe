@@ -168,7 +168,7 @@ if err != nil {
 ```go
 // Add a new record
 data := [6]string{"11", "2022-01-01", "123", "456", "Kevin", "Kevison"}
-df.AddRecord(data[:])
+df = df.AddRecord(data[:])
 
 // Update a value
 for _, row := range df.FrameRecords {

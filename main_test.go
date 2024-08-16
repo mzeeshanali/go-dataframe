@@ -85,7 +85,7 @@ func TestDynamicMetrics(t *testing.T) {
 
 		// Add data to DataFrame
 		data := []string{fmt.Sprintf("%f", v)}
-		df.AddRecord(data)
+		df = df.AddRecord(data)
 
 		if v > recordedMax {
 			recordedMax = v
@@ -202,7 +202,7 @@ func TestStandardDeviationMethodPass(t *testing.T) {
 
 	for i := 0; i < 1000; i++ {
 		val := strconv.Itoa(i)
-		df.AddRecord([]string{"ID-" + val, val})
+		df = df.AddRecord([]string{"ID-" + val, val})
 	}
 
 	stdev, err := df.StandardDeviation("Value")
@@ -226,10 +226,10 @@ func TestStandardDeviationMethodFail(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		// Insert row with value that cannot be converted to float64.
 		if i == 500 {
-			df.AddRecord([]string{"ID-" + "500", "5x0x0x"})
+			df = df.AddRecord([]string{"ID-" + "500", "5x0x0x"})
 		}
 		val := strconv.Itoa(i)
-		df.AddRecord([]string{"ID-" + val, val})
+		df = df.AddRecord([]string{"ID-" + val, val})
 	}
 
 	_, err := df.StandardDeviation("Value")
@@ -479,7 +479,7 @@ func TestAddRecord(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	newData := [6]string{"11", "2022-06-23", "101", "500", "Ben", "Benison"}
-	df.AddRecord(newData[:])
+	df = df.AddRecord(newData[:])
 
 	if df.CountRecords() != 11 {
 		t.Error("Add Record: Count does not match.")
@@ -668,7 +668,7 @@ func TestMergeFramesAllColumns(t *testing.T) {
 	// Prep left frame
 	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	newData := [6]string{"11", "2022-06-27", "5467", "9586", "Cassandra", "SchmaSandra"}
-	df.AddRecord(newData[:])
+	df = df.AddRecord(newData[:])
 
 	// Prep right frame
 	dfRight := CreateDataFrame(path, "data/tests/TestMergeData.csv")
@@ -715,7 +715,7 @@ func TestMergeFramesSpecifiedColumns(t *testing.T) {
 	// Prep left frame
 	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	newData := [6]string{"11", "2022-06-27", "5467", "9586", "Cassandra", "SchmaSandra"}
-	df.AddRecord(newData[:])
+	df = df.AddRecord(newData[:])
 
 	// Prep right frame
 	dfRight := CreateDataFrame(path, "data/tests/TestMergeData.csv")
@@ -982,9 +982,9 @@ func TestAssortment(t *testing.T) {
 
 	// Add Records
 	newData := [6]string{"21", "2022-01-01", "200", "585", "Tommy", "Thompson"}
-	df.AddRecord(newData[:])
+	df = df.AddRecord(newData[:])
 	newDataTwo := [6]string{"22", "2022-01-31", "687", "948", "Sarah", "McSarahson"}
-	df.AddRecord(newDataTwo[:])
+	df = df.AddRecord(newDataTwo[:])
 
 	if df.CountRecords() != 22 {
 		t.Error("Assortment: concat count incorrect.")
@@ -1112,7 +1112,7 @@ func TestAutoCount(t *testing.T) {
 			fmt.Sprintf("%f", val),
 			fmt.Sprintf("%f", sq),
 		}
-		df.AddRecord(data)
+		df = df.AddRecord(data)
 	}
 
 	if df.CountRecords() != 1_000 {
@@ -1132,7 +1132,7 @@ func TestAutoSum(t *testing.T) {
 			fmt.Sprintf("%f", val),
 			fmt.Sprintf("%f", sq),
 		}
-		df.AddRecord(data)
+		df = df.AddRecord(data)
 	}
 
 	if df.Sum("value") != 333_833_500.0 {
